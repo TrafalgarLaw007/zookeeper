@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * 请求处理器最末尾的处理器，给请求返回相应。
  * This Request processor actually applies any transaction associated with a
  * request and services any queries. It is always at the end of a
  * RequestProcessor chain (hence the name), so it does not have a nextProcessor

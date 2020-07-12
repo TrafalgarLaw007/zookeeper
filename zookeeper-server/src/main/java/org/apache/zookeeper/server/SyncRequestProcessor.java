@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 将所有请求的数据持久化至磁盘（快照），然后才处理下一个请求处理器
  * This RequestProcessor logs requests to disk. It batches the requests to do
  * the io efficiently. The request is not passed to the next RequestProcessor
  * until its log has been synced to disk.

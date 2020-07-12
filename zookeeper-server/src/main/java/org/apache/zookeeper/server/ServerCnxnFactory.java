@@ -113,6 +113,7 @@ public abstract class ServerCnxnFactory {
     final public void setZooKeeperServer(ZooKeeperServer zks) {
         this.zkServer = zks;
         if (zks != null) {
+            // 是否数据加密
             if (secure) {
                 zks.setSecureServerCnxnFactory(this);
             } else {

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Lists;
 import org.apache.zookeeper.AsyncCallback.VoidCallback;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.cli.*;
@@ -47,6 +48,27 @@ import org.junit.Test;
 public class ZooKeeperTest extends ClientBase {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+
+    @Test
+    public void testZooKeeper() {
+
+        try {
+            ZooKeeper zk = new ZooKeeper("127.0.0.1:2181", 30000, new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                    System.out.println("ZooKeeper Watcher");
+                }
+            });
+
+            zk.create("/zx", "123".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (KeeperException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testDeleteRecursive() throws IOException, InterruptedException, CliException, KeeperException {

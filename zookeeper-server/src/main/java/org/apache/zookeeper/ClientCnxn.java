@@ -395,11 +395,15 @@ public class ClientCnxn {
         this.hostProvider = hostProvider;
         this.chrootPath = chrootPath;
 
+        // 设置连接超时时间，session超时间 / ZooKeeper
         connectTimeout = sessionTimeout / hostProvider.size();
+        // 设置读取超时时间
         readTimeout = sessionTimeout * 2 / 3;
         readOnly = canBeReadOnly;
 
+        // 发送线程
         sendThread = new SendThread(clientCnxnSocket);
+        // 事件线程
         eventThread = new EventThread();
         this.clientConfig=zooKeeper.getClientConfig();
         initRequestTimeout();
@@ -1052,6 +1056,7 @@ public class ClientCnxn {
             queuePacket(h, null, null, null, null, null, null, null, null);
         }
 
+        //
         private InetSocketAddress rwServerAddress = null;
 
         private final static int minPingRwTimeout = 100;
@@ -1126,6 +1131,7 @@ public class ClientCnxn {
             while (state.isAlive()) {
                 try {
                     if (!clientCnxnSocket.isConnected()) {
+                        // 客户端为连接到服务端
                         // don't re-establish connection if we are closing
                         if (closing) {
                             break;

@@ -274,6 +274,9 @@ public class ZooKeeperMain {
         System.out.println("\n"+msg);
     }
 
+    /**
+     *
+     */
     protected void connectToZK(String newHost) throws InterruptedException, IOException {
         if (zk != null && zk.getState().isAlive()) {
             zk.close();

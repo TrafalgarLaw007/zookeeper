@@ -173,6 +173,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     }
 
     /**
+     * 单个AcceptThread线程，接受新的连接并分配使用简单的循环机制将它们分配给SelectorThread，以将其分布在SelectorThreads中。
      * There is a single AcceptThread which accepts new connections and assigns
      * them to a SelectorThread using a simple round-robin scheme to spread
      * them across the SelectorThreads. It enforces maximum number of
@@ -189,6 +190,8 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         
         public AcceptThread(ServerSocketChannel ss, InetSocketAddress addr,
                 Set<SelectorThread> selectorThreads) throws IOException {
+            // AcceptThread继承了AbstractSelectThread，在实例化时，会将AcceptThread设置为守护线程
+            // 同时会初始化一个多路复用器
             super("NIOServerCxnFactory.AcceptThread:" + addr);
             this.acceptSocket = ss;
             this.acceptKey =
@@ -226,6 +229,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
         private void select() {
             try {
+                // 等待在上次调用select之后新准备的通道
                 selector.select();
 
                 Iterator<SelectionKey> selectedKeys =
@@ -238,6 +242,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                         continue;
                     }
                     if (key.isAcceptable()) {
+                        // 一个客户端连接连接成功到ServerSocketChannel
                         if (!doAccept()) {
                             // If unable to pull a new connection off the accept
                             // queue, pause accepting to give us time to free
@@ -527,6 +532,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             }
 
             if (key.isReadable() || key.isWritable()) {
+                // TODO
                 cnxn.doIO(key);
 
                 // Check if we shutdown or doIO() closed this connection
@@ -645,6 +651,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         }
         configureSaslLogin();
 
+        // 客户端最大连接数
         maxClientCnxns = maxcc;
         sessionlessCnxnTimeout = Integer.getInteger(
             ZOOKEEPER_NIO_SESSIONLESS_CNXN_TIMEOUT, 10000);
@@ -658,6 +665,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
         int numCores = Runtime.getRuntime().availableProcessors();
         // 32 cores sweet spot seems to be 4 selector threads
+        // 多路复用器线程数
         numSelectorThreads = Integer.getInteger(
             ZOOKEEPER_NIO_NUM_SELECTOR_THREADS,
             Math.max((int) Math.sqrt((float) numCores/2), 1));
@@ -685,6 +693,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         ss.socket().setReuseAddress(true);
         LOG.info("binding to port " + addr);
         ss.socket().bind(addr);
+        // 设置为非阻塞模式
         ss.configureBlocking(false);
         acceptThread = new AcceptThread(ss, addr, selectorThreads);
     }
@@ -738,9 +747,11 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     public void start() {
         stopped = false;
         if (workerPool == null) {
+            // TODO
             workerPool = new WorkerService(
                 "NIOWorker", numWorkerThreads, false);
         }
+        //
         for(SelectorThread thread : selectorThreads) {
             if (thread.getState() == Thread.State.NEW) {
                 thread.start();
@@ -748,9 +759,11 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         }
         // ensure thread is started once and only once
         if (acceptThread.getState() == Thread.State.NEW) {
+            // 客户端连接处理线程
             acceptThread.start();
         }
         if (expirerThread.getState() == Thread.State.NEW) {
+            //
             expirerThread.start();
         }
     }
@@ -758,10 +771,13 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     @Override
     public void startup(ZooKeeperServer zks, boolean startServer)
             throws IOException, InterruptedException {
+        // TODO
         start();
         setZooKeeperServer(zks);
         if (startServer) {
+            // 把本地数据加载到内存中(ZKDatabase)，清理已经无效的会话
             zks.startdata();
+            // 服务启动
             zks.startup();
         }
     }

@@ -82,6 +82,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
+ * 请求预处理，数据权限的校验
  * This request processor is generally at the start of a RequestProcessor
  * change. It sets up any transactions associated with requests that change the
  * state of the system. It counts on ZooKeeperServer to update
@@ -142,6 +143,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if (Request.requestOfDeath == request) {
                     break;
                 }
+                //
                 pRequest(request);
             }
         } catch (RequestProcessorException e) {
@@ -413,8 +415,10 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                 if(deserialize)
                     ByteBufferInputStream.byteBuffer2Record(request.request, setDataRequest);
                 path = setDataRequest.getPath();
+                // 校验节点路径// 校验节点路径
                 validatePath(path, request.sessionId);
                 nodeRecord = getRecordForPath(path);
+                // 校验操作权限ACL
                 checkACL(zks, nodeRecord.acl, ZooDefs.Perms.WRITE, request.authInfo);
                 int newVersion = checkAndIncVersion(nodeRecord.stat.getVersion(), setDataRequest.getVersion(), path);
                 request.setTxn(new SetDataTxn(path, setDataRequest.getData(), newVersion));
@@ -902,6 +906,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             }
         }
         request.zxid = zks.getZxid();
+        // 调用下一个请求处理器
         nextProcessor.processRequest(request);
     }
 

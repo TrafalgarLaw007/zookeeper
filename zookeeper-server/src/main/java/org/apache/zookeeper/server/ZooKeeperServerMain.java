@@ -121,6 +121,7 @@ public class ZooKeeperServerMain {
             // so rather than spawning another thread, we will just call
             // run() in this thread.
             // create a file logger url from the command line args
+            // 初始化事务日志文件和快照文件
             txnLog = new FileTxnSnapLog(config.dataLogDir, config.dataDir);
             final ZooKeeperServer zkServer = new ZooKeeperServer(txnLog,
                     config.tickTime, config.minSessionTimeout, config.maxSessionTimeout, null);
@@ -133,13 +134,17 @@ public class ZooKeeperServerMain {
                     new ZooKeeperServerShutdownHandler(shutdownLatch));
 
             // Start Admin server
+            // 设置服务端信息展示的嵌入式Web服务，通过设置zookeeper.admin.enableServer属性为true，开启服务。
             adminServer = AdminServerFactory.createAdminServer();
             adminServer.setZooKeeperServer(zkServer);
             adminServer.start();
 
             boolean needStartZKServer = true;
             if (config.getClientPortAddress() != null) {
+                // 服务上下文工厂创建，通过zookeeper.serverCnxnFactory属性配置需要创建那种类型的工厂类（抽象工厂设计模式），
+                // 默认创建NIOServerCnxnFactory，ZooKeeper还支持NettyServerCnxnFactory
                 cnxnFactory = ServerCnxnFactory.createFactory();
+                // 配置服务上下文工厂，实例化ServerSocketChannel
                 cnxnFactory.configure(config.getClientPortAddress(), config.getMaxClientCnxns(), false);
                 cnxnFactory.startup(zkServer);
                 // zkServer has been started. So we don't need to start it again in secureCnxnFactory.
