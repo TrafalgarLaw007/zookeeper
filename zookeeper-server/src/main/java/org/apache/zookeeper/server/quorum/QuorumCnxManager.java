@@ -295,9 +295,13 @@ public class QuorumCnxManager {
                             boolean listenOnAllIPs,
                             int quorumCnxnThreadsSize,
                             boolean quorumSaslAuthEnabled) {
+        //
         this.recvQueue = new ArrayBlockingQueue<Message>(RECV_CAPACITY);
+        //
         this.queueSendMap = new ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>>();
+        //
         this.senderWorkerMap = new ConcurrentHashMap<Long, SendWorker>();
+        //
         this.lastMessageSent = new ConcurrentHashMap<Long, ByteBuffer>();
 
         String cnxToValue = System.getProperty("zookeeper.cnxTimeout");

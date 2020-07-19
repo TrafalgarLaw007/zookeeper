@@ -393,6 +393,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             try {
                 while (!stopped) {
                     try {
+                        //
                         select();
                         processAcceptedConnections();
                         processInterestOpsUpdateRequests();
@@ -444,6 +445,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                         continue;
                     }
                     if (key.isReadable() || key.isWritable()) {
+                        // TODO 处理IO
                         handleIO(key);
                     } else {
                         LOG.warn("Unexpected ops in select " + key.readyOps());
@@ -467,7 +469,9 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             // connection
             cnxn.disableSelectable();
             key.interestOps(0);
+            // 新增或者更新上下文超时时间堆栈
             touchCnxn(cnxn);
+            //
             workerPool.schedule(workRequest);
         }
 
@@ -747,11 +751,11 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     public void start() {
         stopped = false;
         if (workerPool == null) {
-            // TODO
+            // 创建NIO工作线程池
             workerPool = new WorkerService(
                 "NIOWorker", numWorkerThreads, false);
         }
-        //
+        // TODO
         for(SelectorThread thread : selectorThreads) {
             if (thread.getState() == Thread.State.NEW) {
                 thread.start();

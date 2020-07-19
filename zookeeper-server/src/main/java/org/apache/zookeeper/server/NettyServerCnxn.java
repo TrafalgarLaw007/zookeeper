@@ -431,6 +431,7 @@ public class NettyServerCnxn extends ServerCnxn {
      * @param message the message bytes to process.
      */
     private void receiveMessage(ByteBuf message) {
+        // TODO
         checkIsInEventLoop("receiveMessage");
         try {
             while(message.isReadable() && !throttled.get()) {

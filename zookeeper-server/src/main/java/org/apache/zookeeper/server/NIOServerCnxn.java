@@ -310,6 +310,7 @@ public class NIOServerCnxn extends ServerCnxn {
      * Handles read/write IO on connection.
      */
     void doIO(SelectionKey k) throws InterruptedException {
+        // TODO
         try {
             if (isSocketOpen() == false) {
                 LOG.warn("trying to do i/o on a null socket for session:0x"
